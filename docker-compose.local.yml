@@ -3,7 +3,7 @@ services:
     backend:
         container_name: backend
         build:
-            context: ./docker
+            context: ./infra/docker
             dockerfile: Dockerfile.backend
         tty: true
         ports:
@@ -21,7 +21,7 @@ services:
     db:
         container_name: db
         build:
-            context: ./docker
+            context: ./infra/docker
             dockerfile: Dockerfile.db
         tty: true
         platform: linux/x86_64
@@ -37,7 +37,7 @@ services:
     frontend:
         build:
             context: .
-            dockerfile: ./docker/Dockerfile.frontend
+            dockerfile: ./infra/docker/Dockerfile.frontend
         volumes:
         - ./frontend:/app
         networks:
