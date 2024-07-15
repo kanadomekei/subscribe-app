@@ -1,0 +1,43 @@
+version: "3.8"
+services:   
+    backend:
+        container_name: backend
+        build:
+            context: ./docker
+            dockerfile: Dockerfile.backend
+        tty: true
+        ports:
+            - "8080:8080"
+        depends_on:
+            - db
+        volumes:
+            - type: bind
+              source: ./backend/app
+              target: /go/src/app
+        networks:
+            - frontend_network
+            - backend_network
+
+    db:
+        container_name: db
+        build:
+            context: ./docker
+            dockerfile: Dockerfile.db
+        tty: true
+        platform: linux/x86_64
+        ports:
+            - 3306:3306
+        env_file:
+            - .env  
+        volumes:
+            - mysql_test_volume:/var/lib/mysql
+        networks:
+            - backend_network
+
+volumes:
+    mysql_test_volume:
+    node_modules:
+
+networks:
+    frontend_network: 
+    backend_network: 
