@@ -6,10 +6,6 @@ WORKDIR /app
 COPY ./frontend/package.json ./
 COPY ./frontend/package-lock.json ./
 
-RUN npm install
-
 ENV PORT 5173
 
 EXPOSE 5173
-
-CMD ["npm", "run", "dev", "--", "--host"]
