@@ -33,6 +33,16 @@ services:
             - mysql_test_volume:/var/lib/mysql
         networks:
             - backend_network
+    frontend:
+        build:
+            context: .
+            dockerfile: ./docker/Dockerfile.frontend
+        volumes:
+        - ./frontend:/app
+        networks:
+        - frontend_network
+        ports:
+        - '5173:5173'
 
 volumes:
     mysql_test_volume:
