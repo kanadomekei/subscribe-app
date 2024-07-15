@@ -1,0 +1,31 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt: 
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install Node.js and npm
+      apt:
+        name: 
+          - nodejs
+          - npm
+        state: present
+
+    - name: Check installed npm version  
+      command: npm --version
+      register: npm_version
+      changed_when: false
+
+    - name: Display npm version
+      debug:
+        var: npm_version.stdout
+
+    - name: Upgrade npm to latest version
+      npm:
+        name: npm
+        global: yes
+        state: latest
+      when: npm_version.stdout is version('6.0.0', '<')

@@ -1,0 +1,46 @@
+---
+- name: Dockerのインストール
+  hosts: all
+  become: yes
+  tasks:
+    - name: 必要なパッケージのインストール
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+        state: present
+        update_cache: yes
+
+    - name: Dockerの公式GPGキーを追加
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Dockerリポジトリの追加
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+        state: present
+
+    - name: Dockerのインストール
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+        update_cache: yes
+
+    - name: Dockerサービスの起動と有効化
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: 現在のユーザーをdockerグループに追加
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
