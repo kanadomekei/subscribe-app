@@ -33,6 +33,7 @@ services:
             - mysql_test_volume:/var/lib/mysql
         networks:
             - backend_network
+            
     frontend:
         build:
             context: .
@@ -43,6 +44,9 @@ services:
         - frontend_network
         ports:
         - '5173:5173'
+        command: >
+          sh -c "npm install && npm run dev -- --host"
+
 
 volumes:
     mysql_test_volume:
