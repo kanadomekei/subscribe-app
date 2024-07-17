@@ -2,6 +2,7 @@ import { EnterIcon, ExitIcon } from "@radix-ui/react-icons";
 import { ModeToggle } from "./mode-toggle";
 import { Button } from "./ui/button";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const [auth, setAuth] = useState(false);
@@ -17,9 +18,11 @@ const Header = () => {
               <ExitIcon className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={() => setAuth(true)}>
-              Login
-              <EnterIcon className="ml-2 h-4 w-4" />
+            <Button onClick={() => setAuth(true)} asChild>
+              <Link to={"/login"}>
+                Login
+                <EnterIcon className="ml-2 h-4 w-4" />
+              </Link>
             </Button>
           )}
         </div>
