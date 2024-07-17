@@ -1,16 +1,10 @@
-import Header from "./components/header";
-import YearCart from "./components/yearCart";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { AppRoutes } from "@/routes";
+
+const router = createBrowserRouter(AppRoutes);
 
 function App() {
-  return (
-    <>
-      <Header />
-      <div className="grid grid-cols-3 container mt-10 gap-8">
-        <YearCart />
-        <div className="col-span-2"></div>
-      </div>
-    </>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
