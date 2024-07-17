@@ -1,5 +1,5 @@
 # goのバージョン指定
-FROM golang:1.19.2-alpine3.16
+FROM golang:1.20-alpine3.16
 
 # ディレクトリ作成
 RUN mkdir /go/src/app
