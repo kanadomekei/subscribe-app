@@ -18,7 +18,7 @@ type User struct {
 
 type Subscription struct {
 	ID        uint   `gorm:"primary_key"`
-	UserId    uint   `gorm:"not null"`
+	UserId    uint   `gorm:"not null;index;foreignKey:UserId;references:ID"`
 	AppName   string `gorm:"not null"`
 	Price     int    `gorm:"not null"`
 	Interval  string `gorm:"not null"`
