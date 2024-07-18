@@ -17,14 +17,14 @@ type User struct {
 }
 
 type Subscription struct {
-	ID          uint      `gorm:"primary_key"`
-	UserId      uint      `gorm:"not null"`
-	AppName     string    `gorm:"not null"`
-	Price       int       `gorm:"not null"`
-	Interval    string    `gorm:"not null"`
-	PayMentDate time.Time `sql:"not null;type:date"`
-	Period      int
-	StartDate   time.Time
+	ID        uint   `gorm:"primary_key"`
+	UserId    uint   `gorm:"not null"`
+	AppName   string `gorm:"not null"`
+	Price     int    `gorm:"not null"`
+	Interval  string `gorm:"not null"`
+	Payment   int
+	Period    int
+	StartDate time.Time
 }
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
