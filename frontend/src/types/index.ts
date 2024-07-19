@@ -4,7 +4,7 @@ export type Subscription = {
   link: string;
   price: number;
   interval: "month" | "year";
-  payment: Date;
+  payment: number;
   period: number;
   startMonth: Date;
 };

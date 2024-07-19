@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -23,7 +22,7 @@ import { z } from "zod";
 
 const formSchema = z.object({
   username: z.string().min(2).max(50),
-  email: z.string().min(2).max(50),
+  email: z.string().email("正しいメールアドレスを入力してください"),
   password: z.string().min(8).max(20),
 });
 
@@ -40,7 +39,7 @@ function Login() {
   }
 
   return (
-    <div className="container">
+    <div className="relative h-svh">
       <Card className="w-full max-w-sm absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>

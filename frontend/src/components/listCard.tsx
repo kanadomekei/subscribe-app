@@ -16,9 +16,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Subscription } from "./list";
+import { Subscription } from "@/types";
+import { format } from "date-fns";
+import { ja } from "date-fns/locale";
+import { useEffect, useState } from "react";
 
 const ListCard = ({ props }: { props: Subscription }) => {
+  const [endMonth, setEndMonth] = useState(new Date(props.startMonth));
+
+  useEffect(() => {
+    if (props.period !== -1) {
+      const updatedDate = new Date(endMonth); // 新しいDateオブジェクトを作成
+      updatedDate.setMonth(updatedDate.getMonth() + props.period);
+      setEndMonth(updatedDate); // 新しいDateオブジェクトをsetEndMonthに渡す
+    }
+  }, [props.period, props.startMonth]);
+
   return (
     <div>
       <Card className="border-border h-full">
@@ -51,8 +64,8 @@ const ListCard = ({ props }: { props: Subscription }) => {
           <p>
             <span>支払日 : </span>
             {props.interval === "month"
-              ? "毎月" + props.paymentDate + "日"
-              : "毎年" + props.paymentDate + "月"}
+              ? "毎月" + props.payment + "日"
+              : "毎年" + props.payment + "月"}
           </p>
           <p>
             <span>金額 : </span>
@@ -60,8 +73,10 @@ const ListCard = ({ props }: { props: Subscription }) => {
           </p>
           <p>
             <span>期間 : </span>
-            {props.period.startMonth + "~"}
-            {props.period.endMonth === "current" ? "" : props.period.endMonth}
+            {format(props.startMonth, "yyy/MM", { locale: ja }) + " ~ "}
+            {props.period === -1
+              ? ""
+              : format(endMonth, "yyy/MM", { locale: ja })}
           </p>
         </CardContent>
       </Card>
