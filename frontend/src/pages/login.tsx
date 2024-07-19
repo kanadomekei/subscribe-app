@@ -38,24 +38,29 @@ function Login() {
   });
 
   const { login } = useContext(AuthContext);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const response = await fetch("http://backend:8080/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        UserName: "testuser",
-        EncryptedPassword: "password123",
-      }),
-    });
-    const data = await response.json();
-    if (data.success) {
-      login(data.user); // ユーザーデータをコンテキストに設定
-    } else {
-      console.log("ログイン失敗");
+    try {
+      const response = await fetch("http://localhost:8080/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          UserName: values.email,
+          EncryptedPassword: values.password,
+        }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        login(data.user); 
+        console.log("ログイン成功");
+      } else {
+        console.log("ログイン失敗");
+      }
+    } catch (error) {
+      console.error("エラーが発生しました:", error);
     }
-    console.log(values);
   }
 
   return (
@@ -87,7 +92,7 @@ function Login() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input placeholder="password" {...field} />
+                      <Input type="password" placeholder="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

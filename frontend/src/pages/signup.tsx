@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -29,8 +29,8 @@ const formSchema = z.object({
 });
 
 function SignUp() {
-  const { register } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,10 +40,30 @@ function SignUp() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    register({ UserName: "testuser", EncryptedPassword: "password123" });
-    console.log(values);
-    // navigate("/");
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const response = await fetch("http://localhost:8080/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          UserName: values.email,
+          EncryptedPassword: values.password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+      console.log("Success:", data);
+      navigate("/login");
+    } catch (error) {
+      console.error("Error:", error);
+      setError("Registration failed");
+    }
   }
 
   return (
@@ -86,6 +106,12 @@ function SignUp() {
               </Button>
             </form>
           </Form>
+          {error && (
+            <div className="mt-4 text-red-500">
+              <h2 className="text-xl">Error:</h2>
+              <pre>{error}</pre>
+            </div>
+          )}
         </CardContent>
         <CardFooter className="justify-center">
           <Button
