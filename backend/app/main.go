@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/rs/cors"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"golang.org/x/crypto/bcrypt"
@@ -43,58 +44,63 @@ func checkPasswordHash(password, hash string) bool {
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
-	var user User
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
-		return
-	}
-	hashedPassword, err := hashPassword(user.EncryptedPassword)
-	if err != nil {
-		http.Error(w, "Error hashing password", http.StatusInternalServerError)
-		return
-	}
-	user.EncryptedPassword = hashedPassword
-	if err := db.Create(&user).Error; err != nil {
-		http.Error(w, "Error creating user", http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusCreated)
+    var user User
+    if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+        http.Error(w, `{"error": "Invalid request payload"}`, http.StatusBadRequest)
+        return
+    }
+    hashedPassword, err := hashPassword(user.EncryptedPassword)
+    if err != nil {
+        http.Error(w, `{"error": "Error hashing password"}`, http.StatusInternalServerError)
+        return
+    }
+    user.EncryptedPassword = hashedPassword
+    if err := db.Create(&user).Error; err != nil {
+        http.Error(w, `{"error": "Error creating user"}`, http.StatusInternalServerError)
+        return
+    }
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(map[string]string{"message": "User created successfully"})
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	var user User
-	var input User
+	var input struct {
+		UserName          string `json:"UserName"`
+		EncryptedPassword string `json:"EncryptedPassword"`
+	}
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		http.Error(w, `{"error": "Invalid request payload"}`, http.StatusBadRequest)
 		return
 	}
 	if err := db.Where("user_name = ?", input.UserName).First(&user).Error; err != nil {
-		http.Error(w, "User not found", http.StatusUnauthorized)
+		http.Error(w, `{"error": "User not found"}`, http.StatusUnauthorized)
 		return
 	}
 	if !checkPasswordHash(input.EncryptedPassword, user.EncryptedPassword) {
-		http.Error(w, "Invalid password", http.StatusUnauthorized)
+		http.Error(w, `{"error": "Invalid password"}`, http.StatusUnauthorized)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "Login successful", "success": "true", "user": user.UserName})
 }
 
 func getAllSubscriptionsHandler(w http.ResponseWriter, r *http.Request) {
 	userIdStr := r.URL.Query().Get("user_id")
 	if userIdStr == "" {
-		http.Error(w, "User ID is required", http.StatusBadRequest)
+		http.Error(w, `{"error": "User ID is required"}`, http.StatusBadRequest)
 		return
 	}
 	userId, err := strconv.Atoi(userIdStr)
 	if err != nil {
-		http.Error(w, "Invalid User ID", http.StatusBadRequest)
+		http.Error(w, `{"error": "Invalid User ID"}`, http.StatusBadRequest)
 		return
 	}
 
 	var subscriptions []Subscription
 	if err := db.Where("user_id = ?", userId).Find(&subscriptions).Error; err != nil {
 		fmt.Printf("Error fetching subscriptions: %v\n", err)
-		http.Error(w, fmt.Sprintf("Error fetching subscriptions: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf(`{"error": "Error fetching subscriptions: %v"}`, err), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -104,65 +110,71 @@ func getAllSubscriptionsHandler(w http.ResponseWriter, r *http.Request) {
 func getSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Path[len("/app/"):])
 	if err != nil {
-		http.Error(w, "Invalid subscription ID", http.StatusBadRequest)
+		http.Error(w, `{"error": "Invalid subscription ID"}`, http.StatusBadRequest)
 		return
 	}
 	var subscription Subscription
 	if err := db.First(&subscription, id).Error; err != nil {
-		http.Error(w, "Subscription not found", http.StatusNotFound)
+		http.Error(w, `{"error": "Subscription not found"}`, http.StatusNotFound)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(subscription)
 }
 
 func addSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	var subscription Subscription
 	if err := json.NewDecoder(r.Body).Decode(&subscription); err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		http.Error(w, `{"error": "Invalid request payload"}`, http.StatusBadRequest)
 		return
 	}
 	if err := db.Create(&subscription).Error; err != nil {
 		fmt.Printf("Error creating subscription: %v\n", err)
-		http.Error(w, fmt.Sprintf("Error creating subscription: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf(`{"error": "Error creating subscription: %v"}`, err), http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Subscription created successfully"})
 }
 
 func updateSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Path[len("/app/update/"):])
 	if err != nil {
-		http.Error(w, "Invalid subscription ID", http.StatusBadRequest)
+		http.Error(w, `{"error": "Invalid subscription ID"}`, http.StatusBadRequest)
 		return
 	}
 	var subscription Subscription
 	if err := db.First(&subscription, id).Error; err != nil {
-		http.Error(w, "Subscription not found", http.StatusNotFound)
+		http.Error(w, `{"error": "Subscription not found"}`, http.StatusNotFound)
 		return
 	}
 	if err := json.NewDecoder(r.Body).Decode(&subscription); err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		http.Error(w, `{"error": "Invalid request payload"}`, http.StatusBadRequest)
 		return
 	}
 	if err := db.Save(&subscription).Error; err != nil {
-		http.Error(w, fmt.Sprintf("Error updating subscription: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf(`{"error": "Error updating subscription: %v"}`, err), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "Subscription updated successfully"})
 }
 
 func deleteSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Path[len("/app/delete/"):])
 	if err != nil {
-		http.Error(w, "Invalid subscription ID", http.StatusBadRequest)
+		http.Error(w, `{"error": "Invalid subscription ID"}`, http.StatusBadRequest)
 		return
 	}
 	if err := db.Delete(&Subscription{}, id).Error; err != nil {
-		http.Error(w, fmt.Sprintf("Error deleting subscription: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf(`{"error": "Error deleting subscription: %v"}`, err), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "Subscription deleted successfully"})
 }
+
 
 func main() {
 	dsn := fmt.Sprintf("%s:%s@tcp(db:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local",
@@ -183,16 +195,29 @@ func main() {
 	}
 	fmt.Println("Database migration completed successfully")
 
-	http.HandleFunc("/auth/register", registerHandler)
-	http.HandleFunc("/auth/login", loginHandler)
-	http.HandleFunc("/app/all", getAllSubscriptionsHandler)
-	http.HandleFunc("/app/", getSubscriptionHandler)
-	http.HandleFunc("/app/add", addSubscriptionHandler)
-	http.HandleFunc("/app/update/", updateSubscriptionHandler)
-	http.HandleFunc("/app/delete/", deleteSubscriptionHandler)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/auth/register", registerHandler)
+	mux.HandleFunc("/auth/login", loginHandler)
+	mux.HandleFunc("/app/all", getAllSubscriptionsHandler)
+	mux.HandleFunc("/app/", getSubscriptionHandler)
+	mux.HandleFunc("/app/add", addSubscriptionHandler)
+	mux.HandleFunc("/app/update/", updateSubscriptionHandler)
+	mux.HandleFunc("/app/delete/", deleteSubscriptionHandler)
+
+	// CORS設定
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},  // すべてのオリジンを許可
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+		AllowedHeaders: []string{"*"},
+		AllowCredentials: true,
+		Debug: true,  // デバッグモードを有効化（開発中のみ）
+	})
+
+	// CORSミドルウェアを適用
+	handler := c.Handler(mux)
 
 	fmt.Println("Starting server on :8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":8080", handler); err != nil {
 		fmt.Printf("Server failed: %v\n", err)
 	}
 }
