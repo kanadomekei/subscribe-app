@@ -13,41 +13,50 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
+import { Subscriptions } from "@/sample/subscription";
 
-const chartData = [
-  { app: "spotify", price: 980, fill: "var(--color-spotify)" },
-  { app: "chatGPT", price: 3040, fill: "var(--color-chatGPT)" },
-  {
-    app: "amazonPrimeVideo",
-    price: 600,
-    fill: "var(--color-amazonPrimeVideo)",
-  },
-  { app: "kindleUnlimited", price: 980, fill: "var(--color-kindleUnlimited)" },
-  { app: "other", price: 190, fill: "var(--color-other)" },
-];
-const sortedData = [...chartData].sort((a, b) => b.price - a.price);
+const data = Subscriptions.map((subscription) => {
+  return {
+    app: subscription.appName,
+    price: subscription.price,
+    fill: `var(--color-${subscription.id})`,
+  };
+});
+
+// const chartData = [
+//   { app: "spotify", price: 980, fill: "var(--color-spotify)" },
+//   { app: "chatGPT", price: 3040, fill: "var(--color-chatGPT)" },
+//   {
+//     app: "amazonPrimeVideo",
+//     price: 600,
+//     fill: "var(--color-amazonPrimeVideo)",
+//   },
+//   { app: "kindleUnlimited", price: 980, fill: "var(--color-kindleUnlimited)" },
+//   { app: "other", price: 190, fill: "var(--color-other)" },
+// ];
+const sortedData = [...data].sort((a, b) => b.price - a.price);
 
 const chartConfig = {
   price: {
     label: "Price",
   },
-  spotify: {
-    label: "Spotify",
+  1: {
+    label: data[0].app,
     color: "hsl(var(--chart-1))",
   },
-  chatGPT: {
-    label: "chatGPT",
+  2: {
+    label: data[1].app,
     color: "hsl(var(--chart-2))",
   },
-  amazonPrimeVideo: {
-    label: "AmazonPrimeVideo",
+  3: {
+    label: data[2].app,
     color: "hsl(var(--chart-3))",
   },
-  kindleUnlimited: {
-    label: "KindleUnlimited",
+  4: {
+    label: data[3].app,
     color: "hsl(var(--chart-4))",
   },
-  other: {
+  5: {
     label: "Other",
     color: "hsl(var(--chart-5))",
   },
@@ -55,7 +64,7 @@ const chartConfig = {
 
 const YearCart = () => {
   const totalPrice = useMemo(() => {
-    return chartData.reduce((acc, curr) => acc + curr.price, 0);
+    return data.reduce((acc, curr) => acc + curr.price, 0);
   }, []);
 
   return (

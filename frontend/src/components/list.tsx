@@ -3,51 +3,36 @@ import { Button } from "./ui/button";
 import ListCard from "./listCard";
 import { Link } from "react-router-dom";
 import { Subscription } from "@/types";
+import { Subscriptions } from "@/sample/subscription";
+import { useQuery } from "@tanstack/react-query";
 
-const data: Subscription[] = [
-  {
-    id: 1,
-    appName: "Spotify",
-    link: "https://open.spotify.com/intl-ja",
-    price: 480,
-    interval: "month",
-    payment: 15,
-    period: -1,
-    startMonth: new Date(),
-  },
-  {
-    id: 2,
-    appName: "Netflix",
-    link: "https://www.netflix.com/",
-    price: 790,
-    interval: "year",
-    payment: 2,
-    period: 2,
-    startMonth: new Date("December 17, 2023"),
-  },
-  {
-    id: 3,
-    appName: "Amazon Prime Video",
-    link: "https://www.amazon.co.jp/gp/video/storefront",
-    price: 790,
-    interval: "year",
-    payment: 5,
-    period: 3,
-    startMonth: new Date("December 17, 2016 03:24:00"),
-  },
-  {
-    id: 4,
-    appName: "KindleUnlimited",
-    link: "https://www.amazon.co.jp/gp/video/storefront",
-    price: 790,
-    interval: "year",
-    payment: 2,
-    period: 10,
-    startMonth: new Date(),
-  },
-];
+async function getSubscription(): Promise<Subscription[]> {
+  // const url = "/api/users";
+  const res = Subscriptions;
+  // if (!res.ok) {
+  //   throw new Error("Failed to fetch data");
+  // }
+  return res;
+}
 
 const List = () => {
+  const {
+    data: subscriptions,
+    isPending,
+    error,
+  } = useQuery({
+    queryKey: ["subscriptions"],
+    queryFn: getSubscription,
+  });
+
+  if (isPending) {
+    return <div className="loading">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="error">something went wrong</div>;
+  }
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -58,17 +43,17 @@ const List = () => {
           </Link>
         </Button>
       </div>
-      {data.length === 0 ? (
+      {subscriptions.length === 0 ? (
         <div>使っているサブスクを追加してみよう</div>
       ) : (
         <div
           className={
-            data.length >= 3
+            subscriptions.length >= 3
               ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
               : "grid grid-cols-1 sm:grid-cols-2 gap-6"
           }
         >
-          {data.map((subscription) => (
+          {subscriptions.map((subscription: Subscription) => (
             <ListCard key={subscription.id} props={subscription} />
           ))}
         </div>
