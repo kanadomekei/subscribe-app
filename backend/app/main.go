@@ -80,8 +80,19 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAllSubscriptionsHandler(w http.ResponseWriter, r *http.Request) {
+	userIdStr := r.URL.Query().Get("user_id")
+	if userIdStr == "" {
+		http.Error(w, "User ID is required", http.StatusBadRequest)
+		return
+	}
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		http.Error(w, "Invalid User ID", http.StatusBadRequest)
+		return
+	}
+
 	var subscriptions []Subscription
-	if err := db.Find(&subscriptions).Error; err != nil {
+	if err := db.Where("user_id = ?", userId).Find(&subscriptions).Error; err != nil {
 		fmt.Printf("Error fetching subscriptions: %v\n", err)
 		http.Error(w, fmt.Sprintf("Error fetching subscriptions: %v", err), http.StatusInternalServerError)
 		return
