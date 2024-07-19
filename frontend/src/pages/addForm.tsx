@@ -82,7 +82,7 @@ const AddForm = () => {
       interval: "month",
       payment: "",
       startMonth: undefined,
-      current: false,
+      current: true,
       endMonth: undefined,
     },
   });
@@ -279,7 +279,7 @@ const AddForm = () => {
               {!toggleValue && (
                 <FormField
                   control={form.control}
-                  name="startMonth"
+                  name="endMonth"
                   render={({ field }) => (
                     <FormItem className={"max-w-[10rem]"}>
                       <FormLabel>終了</FormLabel>
