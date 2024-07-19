@@ -1,15 +1,19 @@
 version: "3.8"
-services:   
+services:
     backend:
         container_name: backend
         build:
-            context: ./infra/docker
-            dockerfile: Dockerfile.backend
+            context: .
+            dockerfile: infra/docker/Dockerfile.backend
+        image: backend_image
         tty: true
         ports:
             - "8080:8080"
         depends_on:
-            - db
+            db:
+                condition: service_healthy
+        env_file:
+            - .env  
         volumes:
             - type: bind
               source: ./backend/app
@@ -23,6 +27,7 @@ services:
         build:
             context: ./infra/docker
             dockerfile: Dockerfile.db
+        image: db_image
         tty: true
         platform: linux/x86_64
         ports:
@@ -33,11 +38,18 @@ services:
             - mysql_test_volume:/var/lib/mysql
         networks:
             - backend_network
+        healthcheck:
+            test: ["CMD-SHELL", "mysqladmin ping -h localhost"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
             
     frontend:
+        container_name: frontend
         build:
             context: .
             dockerfile: ./infra/docker/Dockerfile.frontend
+        image: frontend_image
         volumes:
         - ./frontend:/app
         networks:
@@ -45,8 +57,20 @@ services:
         ports:
         - '5173:5173'
         command: >
-          sh -c "npm install && npm run dev -- --host"
+            sh -c "npm install && npm run dev -- --host"
 
+    nginx:
+        container_name: nginx
+        build:
+            context: ./
+            dockerfile: infra/docker/Dockerfile.nginx
+        image: nginx_image
+        ports:
+            - '80:80'
+        networks:
+            - frontend_network
+        depends_on:
+            - frontend
 
 volumes:
     mysql_test_volume:

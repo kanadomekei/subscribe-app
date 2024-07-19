@@ -1,8 +1,20 @@
 # goのバージョン指定
-FROM golang:1.19.2-alpine3.16
+FROM golang:1.20-alpine3.16
+
 # ディレクトリ作成
 RUN mkdir /go/src/app
+
 # 作業ディレクトリ変更
 WORKDIR /go/src/app
+
+# go.modとgo.sumをコピー
+COPY ./backend/app/go.mod ./backend/app/go.sum ./
+
+# 依存関係をインストール
+RUN go mod download
+
+# アプリケーションのソースコードをコピー
+COPY ./backend/app .
+
 # main.go実行
 CMD ["go", "run", "main.go"]
