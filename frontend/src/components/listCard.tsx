@@ -20,6 +20,7 @@ import { Subscription } from "@/types";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const ListCard = ({ props }: { props: Subscription }) => {
   const [endMonth, setEndMonth] = useState(new Date(props.startMonth));
@@ -32,6 +33,10 @@ const ListCard = ({ props }: { props: Subscription }) => {
     }
   }, [props.period, props.startMonth]);
 
+  const handleDelete = () => {
+    confirm("本当に削除しますか？");
+  };
+
   return (
     <div>
       <Card className="border-border h-full">
@@ -43,11 +48,13 @@ const ListCard = ({ props }: { props: Subscription }) => {
                 <DotsVerticalIcon className="stroke-primary h-4 w-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem>
-                  <Pencil2Icon className="mr-1 h-4 w-4" />
-                  編集
+                <DropdownMenuItem asChild>
+                  <Link to={`/${props.id}/edit`}>
+                    <Pencil2Icon className="mr-1 h-4 w-4" />
+                    編集
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleDelete}>
                   <TrashIcon className="mr-1 h-4 w-4" />
                   削除
                 </DropdownMenuItem>

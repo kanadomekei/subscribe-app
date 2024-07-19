@@ -2,12 +2,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import SubscriptionForm from "@/components/subscriptionForm";
 
-const AddForm = () => {
+const EditForm = () => {
   return (
     <div className="container my-10">
       <Card className="w-full max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle className="text-2xl">サブスク追加</CardTitle>
+          <CardTitle className="text-2xl">編集</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
           <SubscriptionForm />
@@ -17,4 +17,4 @@ const AddForm = () => {
   );
 };
 
-export default AddForm;
+export default EditForm;

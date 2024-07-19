@@ -9,7 +9,9 @@ const Header = () => {
   return (
     <div className="bg-primary-foreground">
       <div className="flex justify-between h-20 items-center container">
-        <h1 className="text-lg font-semibold">Subscribe App</h1>
+        <Link to={"/"}>
+          <h1 className="text-lg font-semibold">Subscribe App</h1>
+        </Link>
         <div className="flex items-center gap-4">
           <ModeToggle />
           {auth ? (

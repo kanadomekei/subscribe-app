@@ -27,7 +27,7 @@ const formSchema = z.object({
   password: z.string().min(8).max(20),
 });
 
-function Login() {
+function SignUp() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,7 +43,7 @@ function Login() {
     <div className="relative h-svh">
       <Card className="w-full max-w-sm absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Sign Up</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
           <Form {...form}>
@@ -75,7 +75,7 @@ function Login() {
                 )}
               />
               <Button type="submit" className="w-full">
-                Login
+                Sign Up
               </Button>
             </form>
           </Form>
@@ -87,7 +87,7 @@ function Login() {
             className="text-muted-foreground"
             asChild
           >
-            <Link to={"/signup"}>Sign Up</Link>
+            <Link to={"/login"}>Login</Link>
           </Button>
         </CardFooter>
       </Card>
@@ -95,4 +95,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default SignUp;
