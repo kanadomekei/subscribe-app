@@ -1,3 +1,4 @@
+import { AuthContext } from "@/components/authProvider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,17 +18,20 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useContext } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 const formSchema = z.object({
-  username: z.string().min(2).max(50),
   email: z.string().email("正しいメールアドレスを入力してください"),
   password: z.string().min(8).max(20),
 });
 
 function SignUp() {
+  const { register } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -35,8 +39,11 @@ function SignUp() {
       password: "",
     },
   });
+
   function onSubmit(values: z.infer<typeof formSchema>) {
+    register({ UserName: "testuser", EncryptedPassword: "password123" });
     console.log(values);
+    // navigate("/");
   }
 
   return (

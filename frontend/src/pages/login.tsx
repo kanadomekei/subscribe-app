@@ -1,3 +1,4 @@
+import { AuthContext } from "@/components/authProvider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,12 +18,12 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useContext } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { z } from "zod";
 
 const formSchema = z.object({
-  username: z.string().min(2).max(50),
   email: z.string().email("正しいメールアドレスを入力してください"),
   password: z.string().min(8).max(20),
 });
@@ -35,7 +36,25 @@ function Login() {
       password: "",
     },
   });
-  function onSubmit(values: z.infer<typeof formSchema>) {
+
+  const { login } = useContext(AuthContext);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const response = await fetch("http://backend:8080/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        UserName: "testuser",
+        EncryptedPassword: "password123",
+      }),
+    });
+    const data = await response.json();
+    if (data.success) {
+      login(data.user); // ユーザーデータをコンテキストに設定
+    } else {
+      console.log("ログイン失敗");
+    }
     console.log(values);
   }
 

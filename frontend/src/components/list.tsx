@@ -7,7 +7,7 @@ import { Subscriptions } from "@/sample/subscription";
 import { useQuery } from "@tanstack/react-query";
 
 async function getSubscription(): Promise<Subscription[]> {
-  // const url = "/api/users";
+  // const url = "http://backend:8080/app/all?user_id=1";
   const res = Subscriptions;
   // if (!res.ok) {
   //   throw new Error("Failed to fetch data");
