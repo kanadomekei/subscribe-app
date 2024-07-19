@@ -28,6 +28,8 @@ const formSchema = z.object({
   password: z.string().min(8).max(20),
 });
 
+const API_URL = process.env.BACKEND_API_URL || "http://localhost:8080";
+
 function Login() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,7 +43,7 @@ function Login() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const response = await fetch("http://localhost:8080/auth/login", {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

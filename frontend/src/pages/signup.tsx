@@ -28,6 +28,8 @@ const formSchema = z.object({
   password: z.string().min(8).max(20),
 });
 
+const API_URL = process.env.BACKEND_API_URL || "http://localhost:8080";
+
 function SignUp() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ function SignUp() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const response = await fetch("http://localhost:8080/auth/register", {
+      const response = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
