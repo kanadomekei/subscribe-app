@@ -1,11 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -128,106 +126,177 @@ func loginHandler(c *gin.Context) {
 	})
 }
 
-func getAllSubscriptionsHandler(w http.ResponseWriter, r *http.Request) {
-	userIdStr := r.URL.Query().Get("user_id")
-	if userIdStr == "" {
-		http.Error(w, `{"error": "User ID is required"}`, http.StatusBadRequest)
-		return
-	}
-	userId, err := strconv.Atoi(userIdStr)
+func verifyToken(c *gin.Context) (uint, error) {
+	token := c.Request.Header.Get("Access-Token")
+	userId, err := jwt.VerifyToken(token)
 	if err != nil {
-		http.Error(w, `{"error": "Invalid User ID"}`, http.StatusBadRequest)
-		return
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid token or token expired",
+		})
+		return 0, err
 	}
+	return userId, nil
+}
+
+func getAllSubscriptionsHandler(c *gin.Context) {
+
+	// userId, err := verifyToken(c)
+	// if err != nil {
+	// 	return
+	// }
+	userId := 1
 
 	var subscriptions []Subscription
 	if err := db.Where("user_id = ?", userId).Find(&subscriptions).Error; err != nil {
-		fmt.Printf("Error fetching subscriptions: %v\n", err)
-		http.Error(w, fmt.Sprintf(`{"error": "Error fetching subscriptions: %v"}`, err), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to fetch subscriptions",
+		})
+
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(subscriptions)
+
+	c.JSON(http.StatusOK, gin.H{
+		"subscriptions": subscriptions,
+	})
 }
 
-func getSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Path[len("/app/"):])
-	if err != nil {
-		http.Error(w, `{"error": "Invalid subscription ID"}`, http.StatusBadRequest)
-		return
-	}
+func getSubscriptionHandler(c *gin.Context) {
+	// userId, err := verifyToken(c)
+	// if err != nil {
+	// 	return
+	// }
+	userId := 1
+
+	id := c.Param("id")
+
 	var subscription Subscription
 	if err := db.First(&subscription, id).Error; err != nil {
-		http.Error(w, `{"error": "Subscription not found"}`, http.StatusNotFound)
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Subscription not found",
+		})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(subscription)
+
+	if subscription.UserId != uint(userId) {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "You are not authorized to view this subscription",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"subscription": subscription,
+	})
 }
 
-func addSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
+func addSubscriptionHandler(c *gin.Context) {
+	// トークンの検証
+	// frontendが対応できていないのでコメントアウト
+	// userId, err := verifyToken(c)
+	// if err != nil {
+	//     return
+	// }
+
+	userId := 1
 	var subscription Subscription
-	if err := json.NewDecoder(r.Body).Decode(&subscription); err != nil {
-		http.Error(w, `{"error": "Invalid request payload"}`, http.StatusBadRequest)
+	if error := c.Bind(&subscription); error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request payload",
+		})
 		return
 	}
-	if subscription.Url == "" {
-		http.Error(w, `{"error": "Url is required"}`, http.StatusBadRequest)
-		return
-	}
+	subscription.UserId = uint(userId)
+
 	if subscription.StartDate.IsZero() {
 		subscription.StartDate = time.Now()
 	}
 	if err := db.Create(&subscription).Error; err != nil {
-		fmt.Printf("Error creating subscription: %v\n", err)
-		http.Error(w, fmt.Sprintf(`{"error": "Error creating subscription: %v"}`, err), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to create subscription",
+		})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Subscription created successfully"})
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Subscription created successfully",
+	})
 }
 
-func updateSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Path[len("/app/update/"):])
-	if err != nil {
-		http.Error(w, `{"error": "Invalid subscription ID"}`, http.StatusBadRequest)
+func updateSubscriptionHandler(c *gin.Context) {
+	// userId, err := verifyToken(c)
+	// if err != nil {
+	// 	return
+	// }
+	userId := 1
+
+	id := c.Param("id")
+	var newSubscription Subscription
+	if error := c.Bind(&newSubscription); error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request payload",
+		})
 		return
 	}
+
+	if newSubscription.UserId != uint(userId) {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "You are not authorized to update this subscription",
+		})
+		return
+	}
+
 	var subscription Subscription
 	if err := db.First(&subscription, id).Error; err != nil {
-		http.Error(w, `{"error": "Subscription not found"}`, http.StatusNotFound)
-		return
-	}
-	if err := json.NewDecoder(r.Body).Decode(&subscription); err != nil {
-		http.Error(w, `{"error": "Invalid request payload"}`, http.StatusBadRequest)
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Subscription not found",
+		})
 		return
 	}
 
-	if subscription.Url == "" {
-		http.Error(w, `{"error": "Url is required"}`, http.StatusBadRequest)
-		return
-	}
 	if err := db.Save(&subscription).Error; err != nil {
-		http.Error(w, fmt.Sprintf(`{"error": "Error updating subscription: %v"}`, err), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to update subscription",
+		})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"message": "Subscription updated successfully"})
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Subscription updated successfully",
+	})
 }
 
-func deleteSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Path[len("/app/delete/"):])
-	if err != nil {
-		http.Error(w, `{"error": "Invalid subscription ID"}`, http.StatusBadRequest)
+func deleteSubscriptionHandler(c *gin.Context) {
+	// userId, err := verifyToken(c)
+	// if err != nil {
+	// 	return
+	// }
+	userId := 1
+
+	id := c.Param("id")
+	var subscription Subscription
+	if err := db.First(&subscription, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Subscription not found",
+		})
 		return
 	}
+
+	if subscription.UserId != uint(userId) {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "You are not authorized to delete this subscription",
+		})
+		return
+	}
+
 	if err := db.Delete(&Subscription{}, id).Error; err != nil {
-		http.Error(w, fmt.Sprintf(`{"error": "Error deleting subscription: %v"}`, err), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to delete subscription",
+		})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"message": "Subscription deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Subscription deleted successfully",
+	})
 }
 
 func main() {
@@ -272,11 +341,11 @@ func main() {
 	// /app/ のルーティング
 	app := router.Group("/app")
 	{
-		app.GET("/all")
-		app.GET("/:id")
-		app.POST("/add")
-		app.PUT("/update/:id")
-		app.DELETE("/delete/:id")
+		app.GET("/all", getAllSubscriptionsHandler)
+		app.GET("/:id", getSubscriptionHandler)
+		app.POST("/add", addSubscriptionHandler)
+		app.PUT("/update/:id", updateSubscriptionHandler)
+		app.DELETE("/delete/:id", deleteSubscriptionHandler)
 	}
 
 	router.Run(":8080")
