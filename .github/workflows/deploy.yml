@@ -5,6 +5,7 @@ on:
 
 jobs:
   deploy:
+    runs-on: ubuntu-latest  # 実行環境を指定
     steps:
       - name: AWSの認証情報を設定
         uses: aws-actions/configure-aws-credentials@v2
@@ -13,7 +14,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1  
 
-    steps:
       - name: EC2インスタンスにSSH接続
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
