@@ -7,5 +7,29 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to production
-        run: echo "Deploying to production (dummy)"
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          HOSTNAME: ${{ secrets.EC2_HOSTNAME }}
+          USER_NAME: ${{ secrets.EC2_USERNAME }}
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/github-actions
+          chmod 600 ~/.ssh/github-actions
+          cat >>~/.ssh/config <<END
+          Host ec2
+            HostName $HOSTNAME
+            User $USER_NAME
+            IdentityFile ~/.ssh/github-actions
+            StrictHostKeyChecking no
+          END
+
+      - name: Test SSH connection
+        run: |
+          ssh ec2 echo "SSH接続が成功しました！" || { echo "SSH接続に失敗しました"; exit 1; }
+
+      - name: Deploy to production (dummy)
+        run: echo "本番環境にデプロイしています（ダミー）"
