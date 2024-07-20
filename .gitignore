@@ -1,3 +1,11 @@
 .env
+
 infra/nginx/logs/access.log
 infra/nginx/logs/error.log
+
+# Terraform state files
+*.tfstate
+*.tfstate.backup
+
+# Terraform directory
+.terraform/
