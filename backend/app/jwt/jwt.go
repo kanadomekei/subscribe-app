@@ -38,22 +38,18 @@ func VerifyToken(tokenString string) (uint, error) {
 		if !ok {
 			return 0, fmt.Errorf("invalid user_id type")
 		}
-		fmt.Printf("user_id: %v\n", userId)
+		// fmt.Printf("user_id: %v\n", userId)
 
 		// 有効期限の取得
 		exp, ok := claims["exp"].(float64)
 		if !ok {
 			return 0, fmt.Errorf("invalid exp type")
+		} else if int64(exp) < time.Now().Unix() {
+			return 0, fmt.Errorf("token is expired")
 		}
-		fmt.Printf("exp: %v\n", int64(exp))
+		// fmt.Printf("exp: %v\n", int64(exp))
 
 		return uint(userId), nil
-	} else {
-		if err != nil {
-			fmt.Println("Token validation error:", err)
-		} else {
-			fmt.Println("Token is invalid")
-		}
-		return 0, fmt.Errorf("token is invalid")
 	}
+	return 0, fmt.Errorf("token is invalid")
 }
