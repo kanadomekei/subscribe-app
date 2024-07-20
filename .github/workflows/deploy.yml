@@ -19,13 +19,11 @@ jobs:
           mkdir -p ~/.ssh/
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/github-actions
           chmod 600 ~/.ssh/github-actions
-          cat >>~/.ssh/config <<END
-          Host ec2
-            HostName $HOSTNAME
-            User $USER_NAME
-            IdentityFile ~/.ssh/github-actions
-            StrictHostKeyChecking no
-          END
+          echo "Host ec2" > ~/.ssh/config
+          echo "  HostName $HOSTNAME" >> ~/.ssh/config
+          echo "  User $USER_NAME" >> ~/.ssh/config
+          echo "  IdentityFile ~/.ssh/github-actions" >> ~/.ssh/config
+          echo "  StrictHostKeyChecking no" >> ~/.ssh/config
 
       - name: Test SSH connection
         run: |
