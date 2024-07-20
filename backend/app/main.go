@@ -8,8 +8,6 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-
-	"subscrive-app/jwt"
 )
 
 type User struct {
@@ -51,14 +49,12 @@ func main() {
 	db.AutoMigrate(&Subscription{})
 	fmt.Println("Successfully connected to database")
 
-	// 鍵発行してみる
-	key := jwt.GenerateToken(1, 1)
-	// verifyしてみる
-	id, err := jwt.VerifyToken(key)
-	if err != nil {
-		fmt.Println("Failed to verify token:", err)
+	// ユーザを登録してみる
+	res := db.Create(&User{UserName: "test", EncryptedPassword: "password"})
+	if res.Error != nil {
+		fmt.Println("Failed to create user:", res.Error)
+		return
 	}
-	fmt.Println("user_id:", id)
 
 	http.HandleFunc("/", helloHandler)
 	fmt.Println("Starting server on :8080")
