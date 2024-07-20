@@ -4,7 +4,7 @@ services:
         container_name: backend
         build:
             context: .
-            dockerfile: infra/docker/Dockerfile.backend
+            dockerfile: infra/docker/local/Dockerfile.backend
         image: backend_image
         tty: true
         ports:
@@ -25,7 +25,7 @@ services:
     db:
         container_name: db
         build:
-            context: ./infra/docker
+            context: ./infra/docker/local
             dockerfile: Dockerfile.db
         image: db_image
         tty: true
@@ -48,7 +48,7 @@ services:
         container_name: frontend
         build:
             context: .
-            dockerfile: ./infra/docker/Dockerfile.frontend
+            dockerfile: ./infra/docker/local/Dockerfile.frontend
         image: frontend_image
         volumes:
         - ./frontend:/app
@@ -65,7 +65,7 @@ services:
         container_name: nginx
         build:
             context: ./
-            dockerfile: infra/docker/Dockerfile.nginx
+            dockerfile: infra/docker/local/Dockerfile.nginx
         image: nginx_image
         ports:
             - '80:80'
