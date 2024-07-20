@@ -52,6 +52,8 @@ services:
         image: frontend_image
         volumes:
         - ./frontend:/app
+        env_file:
+        - .env          
         networks:
         - frontend_network
         ports:
