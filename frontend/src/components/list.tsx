@@ -6,8 +6,10 @@ import { Subscription } from "@/types";
 import { Subscriptions } from "@/sample/subscription";
 import { useQuery } from "@tanstack/react-query";
 
+const API_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:8080";
+
 async function getSubscription(): Promise<Subscription[]> {
-  // const url = "http://backend:8080/app/all?user_id=1";
+  // const url = `${API_URL}/app/all?user_id=1`;
   const res = Subscriptions;
   // if (!res.ok) {
   //   throw new Error("Failed to fetch data");

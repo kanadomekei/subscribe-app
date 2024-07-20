@@ -4,15 +4,15 @@ import YearCart from "@/components/yearCart";
 import { useContext } from "react";
 
 const Home = () => {
-  // const { isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated } = useContext(AuthContext);
 
-  // if (!isAuthenticated) {
-  //   return (
-  //     <div className="container">
-  //       <p>You are not logged in.</p>
-  //     </div>
-  //   );
-  // }
+  if (!isAuthenticated) {
+    return (
+      <div className="container">
+        <p>You are not logged in.</p>
+      </div>
+    );
+  }
 
   return (
     <div>

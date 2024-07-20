@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
@@ -28,11 +29,13 @@ const formSchema = z.object({
   password: z.string().min(8).max(20),
 });
 
-const API_URL = process.env.BACKEND_API_URL || "http://localhost:8080";
+const API_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:8080";
 
 function SignUp() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const { login } = useContext(AuthContext);
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,6 +46,7 @@ function SignUp() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setLoading(true);
     try {
       const response = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
@@ -61,7 +65,9 @@ function SignUp() {
 
       const data = await response.json();
       console.log("Success:", data);
-      navigate("/login");
+      login(data.user);
+      setLoading(false);
+      navigate("/");
     } catch (error) {
       console.error("Error:", error);
       setError("Registration failed");
@@ -103,8 +109,15 @@ function SignUp() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Sign Up
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? (
+                  <div className="flex">
+                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                    "Please wait"
+                  </div>
+                ) : (
+                  "Sign Up"
+                )}
               </Button>
             </form>
           </Form>

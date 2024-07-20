@@ -18,9 +18,10 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useContext } from "react";
+import { ReloadIcon } from "@radix-ui/react-icons";
+import { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 const formSchema = z.object({
@@ -28,7 +29,7 @@ const formSchema = z.object({
   password: z.string().min(8).max(20),
 });
 
-const API_URL = process.env.BACKEND_API_URL || "http://localhost:8080";
+const API_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:8080";
 
 function Login() {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -40,8 +41,11 @@ function Login() {
   });
 
   const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setLoading(true);
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
@@ -55,8 +59,10 @@ function Login() {
       });
       const data = await response.json();
       if (data.success) {
-        login(data.user); 
-        console.log("ログイン成功");
+        login(data.user);
+        console.log("ログイン成功", data.user);
+        setLoading(false);
+        navigate(`/`);
       } else {
         console.log("ログイン失敗");
       }
@@ -94,14 +100,25 @@ function Login() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="password" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="password"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Login
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? (
+                  <div className="flex">
+                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                    "Please wait"
+                  </div>
+                ) : (
+                  "Login"
+                )}
               </Button>
             </form>
           </Form>
