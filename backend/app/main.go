@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/rs/cors"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -212,29 +212,30 @@ func main() {
 	}
 	fmt.Println("Database migration completed successfully")
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/auth/register", registerHandler)
-	mux.HandleFunc("/auth/login", loginHandler)
-	mux.HandleFunc("/app/all", getAllSubscriptionsHandler)
-	mux.HandleFunc("/app/", getSubscriptionHandler)
-	mux.HandleFunc("/app/add", addSubscriptionHandler)
-	mux.HandleFunc("/app/update/", updateSubscriptionHandler)
-	mux.HandleFunc("/app/delete/", deleteSubscriptionHandler)
-
-	// CORS設定
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"}, // すべてのオリジンを許可
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
-		AllowedHeaders:   []string{"*"},
-		AllowCredentials: true,
-		Debug:            true, // デバッグモードを有効化（開発中のみ）
+	// routing
+	router := gin.Default()
+	router.GET("/hc", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "service working",
+		})
 	})
 
-	// CORSミドルウェアを適用
-	handler := c.Handler(mux)
-
-	fmt.Println("Starting server on :8080")
-	if err := http.ListenAndServe(":8080", handler); err != nil {
-		fmt.Printf("Server failed: %v\n", err)
+	// /auth/ のルーティング
+	auth := router.Group("/auth")
+	{
+		auth.POST("/register")
+		auth.POST("/login")
 	}
+
+	// /app/ のルーティング
+	app := router.Group("/app")
+	{
+		app.GET("/all")
+		app.GET("/:id")
+		app.POST("/add")
+		app.PUT("/update/:id")
+		app.DELETE("/delete/:id")
+	}
+
+	router.Run(":8080")
 }
