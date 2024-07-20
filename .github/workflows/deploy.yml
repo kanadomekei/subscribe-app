@@ -18,6 +18,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
@@ -25,7 +28,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1
 
-      - name: Connect to EC2 instance
+      - name: Connect to EC2 instance and deploy
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           HOST: ${{ secrets.EC2_HOSTNAME }}
@@ -34,7 +37,9 @@ jobs:
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} << 'EOF'
             echo "Successfully connected to EC2 instance"
+            cd ~/subscribe-app
+            git pull
+            docker compose -f docker-compose.local.yml down
+            docker compose -f docker-compose.local.yml up --build -d
+            echo "Deployed to production environment"
           EOF
-
-      - name: Deploy to production (dummy)
-        run: echo "Deploying to production environment (dummy)"
