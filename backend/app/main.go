@@ -29,6 +29,7 @@ type Subscription struct {
 	Payment   int
 	Period    int
 	StartDate time.Time `gorm:"type:datetime"`
+	Url       string    `gorm:"not null"`  
 }
 
 var db *gorm.DB
@@ -133,6 +134,13 @@ func addSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error": "Invalid request payload"}`, http.StatusBadRequest)
 		return
 	}
+	if subscription.Url == "" {
+		http.Error(w, `{"error": "Url is required"}`, http.StatusBadRequest)
+		return
+	}
+	if subscription.StartDate.IsZero() {
+		subscription.StartDate = time.Now()
+	}
 	if err := db.Create(&subscription).Error; err != nil {
 		fmt.Printf("Error creating subscription: %v\n", err)
 		http.Error(w, fmt.Sprintf(`{"error": "Error creating subscription: %v"}`, err), http.StatusInternalServerError)
@@ -158,6 +166,11 @@ func updateSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error": "Invalid request payload"}`, http.StatusBadRequest)
 		return
 	}
+
+	if subscription.Url == "" {
+		http.Error(w, `{"error": "Url is required"}`, http.StatusBadRequest)
+		return
+	}
 	if err := db.Save(&subscription).Error; err != nil {
 		http.Error(w, fmt.Sprintf(`{"error": "Error updating subscription: %v"}`, err), http.StatusInternalServerError)
 		return
@@ -179,7 +192,6 @@ func deleteSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": "Subscription deleted successfully"})
 }
-
 
 func main() {
 	dsn := fmt.Sprintf("%s:%s@tcp(db:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local",
