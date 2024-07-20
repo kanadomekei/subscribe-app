@@ -5,29 +5,25 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: AWSの認証情報を設定
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1  
 
-      - name: Configure SSH
+    steps:
+      - name: EC2インスタンスにSSH接続
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          HOSTNAME: ${{ secrets.EC2_HOSTNAME }}
-          USER_NAME: ${{ secrets.EC2_USERNAME }}
+          PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.EC2_HOSTNAME }}
+          USER: ${{ secrets.EC2_USERNAME }}
         run: |
-          mkdir -p ~/.ssh/
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/github-actions
-          chmod 600 ~/.ssh/github-actions
-          echo "Host ec2" > ~/.ssh/config
-          echo "  HostName $HOSTNAME" >> ~/.ssh/config
-          echo "  User $USER_NAME" >> ~/.ssh/config
-          echo "  IdentityFile ~/.ssh/github-actions" >> ~/.ssh/config
-          echo "  StrictHostKeyChecking no" >> ~/.ssh/config
-
-      - name: Test SSH connection
-        run: |
-          ssh ec2 echo "SSH接続が成功しました！" || { echo "SSH接続に失敗しました"; exit 1; }
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} << 'EOF'
+            echo "EC2インスタンスに接続成功"
+          EOF
 
       - name: Deploy to production (dummy)
         run: echo "本番環境にデプロイしています（ダミー）"
