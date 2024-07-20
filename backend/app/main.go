@@ -82,7 +82,12 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"message": "Login successful", "success": "true", "user": user.UserName})
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Login successful",
+		"success": "true",
+		"user":    user.UserName,
+		"userID":  fmt.Sprintf("%d", user.ID),
+	})
 }
 
 func getAllSubscriptionsHandler(w http.ResponseWriter, r *http.Request) {
