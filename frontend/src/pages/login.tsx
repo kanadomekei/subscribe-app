@@ -60,7 +60,8 @@ function Login() {
       const data = await response.json();
       if (data.success) {
         login(data.user);
-        console.log("ログイン成功", data.user);
+        console.log("ログイン成功", "user", data.user, data.userID);
+        console.log("ログイン成功", "userID", data.userID);
         setLoading(false);
         navigate(`/`);
       } else {
