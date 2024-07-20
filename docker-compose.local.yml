@@ -71,6 +71,8 @@ services:
             - frontend_network
         depends_on:
             - frontend
+        volumes:
+            - ./infra/nginx/logs:/var/log/nginx
 
 volumes:
     mysql_test_volume:
