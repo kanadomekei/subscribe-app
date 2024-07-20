@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/rs/cors"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -21,15 +21,15 @@ type User struct {
 }
 
 type Subscription struct {
-	ID        uint      `gorm:"primary_key"`
-	UserId    uint      `gorm:"not null;index;foreignKey:UserId;references:ID"`
-	AppName   string    `gorm:"not null"`
-	Price     int       `gorm:"not null"`
-	Interval  string    `gorm:"not null"`
+	ID        uint   `gorm:"primary_key"`
+	UserId    uint   `gorm:"not null;index;foreignKey:UserId;references:ID"`
+	AppName   string `gorm:"not null"`
+	Price     int    `gorm:"not null"`
+	Interval  string `gorm:"not null"`
 	Payment   int
 	Period    int
 	StartDate time.Time `gorm:"type:datetime"`
-	Url       string    `gorm:"not null"`  
+	Url       string
 }
 
 var db *gorm.DB
@@ -45,23 +45,23 @@ func checkPasswordHash(password, hash string) bool {
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
-    var user User
-    if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-        http.Error(w, `{"error": "Invalid request payload"}`, http.StatusBadRequest)
-        return
-    }
-    hashedPassword, err := hashPassword(user.EncryptedPassword)
-    if err != nil {
-        http.Error(w, `{"error": "Error hashing password"}`, http.StatusInternalServerError)
-        return
-    }
-    user.EncryptedPassword = hashedPassword
-    if err := db.Create(&user).Error; err != nil {
-        http.Error(w, `{"error": "Error creating user"}`, http.StatusInternalServerError)
-        return
-    }
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(map[string]string{"message": "User created successfully"})
+	var user User
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		http.Error(w, `{"error": "Invalid request payload"}`, http.StatusBadRequest)
+		return
+	}
+	hashedPassword, err := hashPassword(user.EncryptedPassword)
+	if err != nil {
+		http.Error(w, `{"error": "Error hashing password"}`, http.StatusInternalServerError)
+		return
+	}
+	user.EncryptedPassword = hashedPassword
+	if err := db.Create(&user).Error; err != nil {
+		http.Error(w, `{"error": "Error creating user"}`, http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "User created successfully"})
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -205,7 +205,7 @@ func main() {
 		fmt.Printf("Failed to connect to database: %v\n", err)
 		return
 	}
-	
+
 	if err := db.AutoMigrate(&User{}, &Subscription{}); err != nil {
 		fmt.Printf("Error in auto migration: %v\n", err)
 		return
@@ -223,11 +223,11 @@ func main() {
 
 	// CORS設定
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},  // すべてのオリジンを許可
-		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
-		AllowedHeaders: []string{"*"},
+		AllowedOrigins:   []string{"*"}, // すべてのオリジンを許可
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
-		Debug: true,  // デバッグモードを有効化（開発中のみ）
+		Debug:            true, // デバッグモードを有効化（開発中のみ）
 	})
 
 	// CORSミドルウェアを適用
