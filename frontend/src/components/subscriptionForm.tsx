@@ -70,7 +70,13 @@ const getSchema = (interval: string) => {
   });
 };
 
-const SubscriptionForm = ({ value }: { value?: Subscription }) => {
+const SubscriptionForm = ({
+  value,
+  handleSubmit,
+}: {
+  value?: Subscription;
+  handleSubmit: (values: z.infer<typeof formSchema>) => void;
+}) => {
   const [schema, setSchema] = useState(() => getSchema("month"));
 
   const [endMonth, setEndMonth] = useState(
@@ -112,7 +118,8 @@ const SubscriptionForm = ({ value }: { value?: Subscription }) => {
         },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    handleSubmit(values);
     console.log(values);
   }
 

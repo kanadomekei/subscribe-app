@@ -67,7 +67,7 @@ function SignUp() {
       console.log("Success:", data);
       login(data.user);
       setLoading(false);
-      navigate("/");
+      navigate("/login");
     } catch (error) {
       console.error("Error:", error);
       setError("Registration failed");
