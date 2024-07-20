@@ -36,5 +36,11 @@ jobs:
             echo "Successfully connected to EC2 instance"
           EOF
 
-      - name: Deploy to production (dummy)
-        run: echo "Deploying to production environment (dummy)"
+      - name: Deploy to production
+        run: |
+          echo "Deploying to production environment (dummy)"
+          cd subscribe-app/
+          git pull
+          docker compose -f docker-compose.local.yml down
+          docker compose -f docker-compose.local.yml up --build -d
+          echo "Deploying to production environment"
