@@ -8,10 +8,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+
+	"subscrive-app/jwt"
 )
 
 type User struct {
@@ -44,50 +47,84 @@ func checkPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-func registerHandler(w http.ResponseWriter, r *http.Request) {
+func registerHandler(c *gin.Context) {
+	fmt.Println(c.PostForm("UserName"))
+	fmt.Println(c.PostForm("EncryptedPassword"))
 	var user User
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		http.Error(w, `{"error": "Invalid request payload"}`, http.StatusBadRequest)
+	if error := c.Bind(&user); error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request payload",
+		})
 		return
 	}
-	hashedPassword, err := hashPassword(user.EncryptedPassword)
+
+	if user.UserName == "" || user.EncryptedPassword == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "User name and password are required",
+		})
+		return
+	}
+
+	hashPassword, err := hashPassword(user.EncryptedPassword)
 	if err != nil {
-		http.Error(w, `{"error": "Error hashing password"}`, http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error",
+		})
 		return
 	}
-	user.EncryptedPassword = hashedPassword
+	user.EncryptedPassword = hashPassword
+
 	if err := db.Create(&user).Error; err != nil {
-		http.Error(w, `{"error": "Error creating user"}`, http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to create user",
+		})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"message": "User created successfully"})
+
+	c.JSON(http.StatusCreated, gin.H{
+		"access_token":  jwt.GenerateToken(user.ID, 1),
+		"refresh_token": jwt.GenerateToken(user.ID, 72),
+		"message":       "User created successfully",
+		"user":          user.UserName,
+		"userID":        user.ID,
+		"success":       true,
+	})
 }
 
-func loginHandler(w http.ResponseWriter, r *http.Request) {
+func loginHandler(c *gin.Context) {
 	var user User
-	var input struct {
-		UserName          string `json:"UserName"`
-		EncryptedPassword string `json:"EncryptedPassword"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, `{"error": "Invalid request payload"}`, http.StatusBadRequest)
+	if error := c.Bind(&user); error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request payload",
+		})
 		return
 	}
-	if err := db.Where("user_name = ?", input.UserName).First(&user).Error; err != nil {
-		http.Error(w, `{"error": "User not found"}`, http.StatusUnauthorized)
+
+	fmt.Println(user.UserName)
+	fmt.Println(user.EncryptedPassword)
+
+	var foundUser User
+	if err := db.Where("user_name = ?", user.UserName).First(&foundUser).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid user name or password",
+		})
 		return
 	}
-	if !checkPasswordHash(input.EncryptedPassword, user.EncryptedPassword) {
-		http.Error(w, `{"error": "Invalid password"}`, http.StatusUnauthorized)
+
+	if !checkPasswordHash(user.EncryptedPassword, foundUser.EncryptedPassword) {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid user name or password",
+		})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"message": "Login successful",
-		"success": "true",
-		"user":    user.UserName,
-		"userID":  fmt.Sprintf("%d", user.ID),
+
+	c.JSON(http.StatusOK, gin.H{
+		"access_token":  jwt.GenerateToken(user.ID, 1),
+		"refresh_token": jwt.GenerateToken(user.ID, 72),
+		"message":       "Login successful",
+		"user":          user.UserName,
+		"userID":        user.ID,
+		"success":       true,
 	})
 }
 
@@ -214,6 +251,11 @@ func main() {
 
 	// routing
 	router := gin.Default()
+	router.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"*"},
+		AllowHeaders: []string{"*"},
+	}))
 	router.GET("/hc", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "service working",
@@ -223,8 +265,8 @@ func main() {
 	// /auth/ のルーティング
 	auth := router.Group("/auth")
 	{
-		auth.POST("/register")
-		auth.POST("/login")
+		auth.POST("/register", registerHandler)
+		auth.POST("/login", loginHandler)
 	}
 
 	// /app/ のルーティング
