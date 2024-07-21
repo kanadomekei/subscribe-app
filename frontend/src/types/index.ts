@@ -24,3 +24,14 @@ export type User = {
   id: number;
   password: string;
 };
+
+export type FormValue = {
+  link: string;
+  current: boolean;
+  appName: string;
+  price: number | "";
+  interval: "month" | "year";
+  payment: string;
+  startMonth: Date;
+  period?: number | "" | undefined;
+};

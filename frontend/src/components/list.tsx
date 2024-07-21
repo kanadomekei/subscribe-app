@@ -2,15 +2,14 @@ import { PlusIcon } from "@radix-ui/react-icons";
 import { Button } from "./ui/button";
 import ListCard from "./listCard";
 import { Link } from "react-router-dom";
-import { Subscription, SubscriptionEx } from "@/types";
-import { Subscriptions } from "@/sample/subscription";
+import { SubscriptionEx } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { useContext } from "react";
 import { AuthContext } from "./authProvider";
 
 const API_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:8080";
 
-async function getSubscription(userId: number): Promise<SubscriptionEx[]> {
+async function getAllSubscriptions(userId: number): Promise<SubscriptionEx[]> {
   const url = `${API_URL}/app/all?user_id=${userId}`;
   const res = await fetch(url);
   if (!res.ok) {
@@ -32,7 +31,7 @@ const List = () => {
     refetch,
   } = useQuery({
     queryKey: ["subscriptions"],
-    queryFn: () => getSubscription(user.id),
+    queryFn: () => getAllSubscriptions(user.id),
   });
 
   if (isPending) {
@@ -55,7 +54,7 @@ const List = () => {
           </Link>
         </Button>
       </div>
-      {subscriptions.length === 0 ? (
+      {!subscriptions ? (
         <div>使っているサブスクを追加してみよう</div>
       ) : (
         <div

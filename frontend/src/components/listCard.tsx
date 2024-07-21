@@ -16,12 +16,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Subscription, SubscriptionEx } from "@/types";
+import { SubscriptionEx } from "@/types";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { AuthContext } from "./authProvider";
 const API_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:8080";
 
 const ListCard = ({

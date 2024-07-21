@@ -3,21 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SubscriptionForm from "@/components/subscriptionForm";
 import { useContext, useState } from "react";
 import { AuthContext } from "@/components/authProvider";
-import { Subscription } from "@/types";
 import { useNavigate } from "react-router-dom";
+import { FormValue } from "@/types";
 
 const API_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:8080";
-
-type FormValue = {
-  startMonth: Date;
-  appName: string;
-  link: string;
-  price: number | "";
-  interval: "month" | "year";
-  payment: string;
-  current: boolean;
-  endMonth?: Date | undefined;
-};
 
 const AddForm = () => {
   const { user } = useContext(AuthContext);
@@ -25,19 +14,12 @@ const AddForm = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (values: FormValue) => {
-    if (values.endMonth) {
-      setPeriod(
-        Math.floor(
-          (values.endMonth.getTime() - values.startMonth.getTime()) /
-            1000 /
-            60 /
-            60 /
-            24 /
-            30
-        )
-      );
-    } else {
-      setPeriod(-1);
+    if (values !== undefined) {
+      if (values.period === "") {
+        setPeriod(undefined);
+      } else {
+        setPeriod(values.period);
+      }
     }
 
     try {
@@ -47,12 +29,12 @@ const AddForm = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          UserId: 1,
+          UserId: Number(user.id),
           AppName: values.appName,
           Price: values.price,
           Interval: values.interval,
           Payment: values.payment,
-          Period: null,
+          Period: period,
           StartDate: values.startMonth,
           Url: values.link,
         }),
