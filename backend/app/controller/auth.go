@@ -64,12 +64,12 @@ func RegisterHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"access_token":  jwt.GenerateToken(user.ID, 1),
-		"refresh_token": jwt.GenerateToken(user.ID, 72),
-		"message":       "User created successfully",
-		"user":          user.UserName,
-		"userID":        user.ID,
-		"success":       true,
+		"accessToken":  jwt.GenerateToken(user.ID, 1),
+		"refreshToken": jwt.GenerateToken(user.ID, 72),
+		"message":      "User created successfully",
+		"user":         user.UserName,
+		"userID":       user.ID,
+		"success":      true,
 	})
 }
 
@@ -81,9 +81,6 @@ func LoginHandler(c *gin.Context) {
 		})
 		return
 	}
-
-	fmt.Println(user.UserName)
-	fmt.Println(user.EncryptedPassword)
 
 	var foundUser model.User
 	if err := db.Where("user_name = ?", user.UserName).First(&foundUser).Error; err != nil {
@@ -101,12 +98,12 @@ func LoginHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"access_token":  jwt.GenerateToken(user.ID, 1),
-		"refresh_token": jwt.GenerateToken(user.ID, 72),
-		"message":       "Login successful",
-		"user":          user.UserName,
-		"userID":        user.ID,
-		"success":       true,
+		"accessToken":  jwt.GenerateToken(foundUser.ID, 1),
+		"refreshToken": jwt.GenerateToken(foundUser.ID, 72),
+		"message":      "Login successful",
+		"user":         user.UserName,
+		"userID":       foundUser.ID,
+		"success":      true,
 	})
 }
 
@@ -128,9 +125,9 @@ func RefreshTokenHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"access_token":  jwt.GenerateToken(user_id, 1),
-		"refresh_token": jwt.GenerateToken(user_id, 72),
-		"message":       "Token refreshed successfully",
-		"success":       true,
+		"accessToken":  jwt.GenerateToken(user_id, 1),
+		"refreshToken": jwt.GenerateToken(user_id, 72),
+		"message":      "Token refreshed successfully",
+		"success":      true,
 	})
 }

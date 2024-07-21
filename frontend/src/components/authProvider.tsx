@@ -24,6 +24,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
     setIsAuthenticated(false);
     setUser(null);
   };

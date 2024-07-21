@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"subscrive-app/jwt"
 	"subscrive-app/model"
@@ -10,7 +11,9 @@ import (
 )
 
 func verifyToken(c *gin.Context) (uint, error) {
-	token := c.Request.Header.Get("Access-Token")
+	token := c.Request.Header.Get("Authorization")
+	fmt.Println(token)
+
 	userId, err := jwt.VerifyToken(token)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -23,11 +26,14 @@ func verifyToken(c *gin.Context) (uint, error) {
 
 func GetAllSubscriptionsHandler(c *gin.Context) {
 
-	// userId, err := verifyToken(c)
-	// if err != nil {
-	// 	return
-	// }
-	userId := 1
+	userId, err := verifyToken(c)
+	if err != nil {
+		return
+	}
+	fmt.Println(userId)
+	fmt.Println(err)
+
+	// userId := 1
 
 	var subscriptions []model.Subscription
 	if err := db.Where("user_id = ?", userId).Find(&subscriptions).Error; err != nil {

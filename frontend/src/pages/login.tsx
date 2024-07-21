@@ -62,6 +62,11 @@ function Login() {
         login(data.user);
         console.log("ログイン成功", "user", data.user, data.userID);
         console.log("ログイン成功", "userID", data.userID);
+
+        // トークンを保存する
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        
         setLoading(false);
         navigate(`/`);
       } else {
