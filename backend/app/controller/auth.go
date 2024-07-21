@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 	"subscrive-app/jwt"
 
@@ -30,8 +29,6 @@ func checkPasswordHash(password, hash string) bool {
 }
 
 func RegisterHandler(c *gin.Context) {
-	fmt.Println(c.PostForm("UserName"))
-	fmt.Println(c.PostForm("EncryptedPassword"))
 	var user model.User
 	if error := c.Bind(&user); error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{

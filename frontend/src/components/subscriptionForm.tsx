@@ -83,6 +83,7 @@ const SubscriptionForm = ({
   value?: SubscriptionEx;
   handleSubmit: (values: z.infer<typeof formSchema>) => void;
 }) => {
+  console.log(value);
   const [schema, setSchema] = useState(() => getSchema("month"));
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(schema),
@@ -259,6 +260,7 @@ const SubscriptionForm = ({
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {field.value ? (
+                          console.log(field.value),
                           format(field.value, "PPP")
                         ) : (
                           <span>Pick a date</span>

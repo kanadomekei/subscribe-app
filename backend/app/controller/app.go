@@ -44,17 +44,14 @@ func GetAllSubscriptionsHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"subscriptions": subscriptions,
-	})
+	c.JSON(http.StatusOK, subscriptions)
 }
 
 func GetSubscriptionHandler(c *gin.Context) {
-	// userId, err := verifyToken(c)
-	// if err != nil {
-	// 	return
-	// }
-	userId := 1
+	userId, err := verifyToken(c)
+	if err != nil {
+		return
+	}
 
 	id := c.Param("id")
 
@@ -74,19 +71,24 @@ func GetSubscriptionHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"subscription": subscription,
+		"AppName":   subscription.AppName,
+		"ID":        subscription.ID,
+		"Price":     subscription.Price,
+		"StartDate": subscription.StartDate,
+		"Interval":  subscription.Interval,
+		"Payment":   subscription.Payment,
+		"Period":    subscription.Period,
+		"Url":       subscription.Url,
+		"UserId":    subscription.UserId,
 	})
 }
 
 func AddSubscriptionHandler(c *gin.Context) {
-	// トークンの検証
-	// frontendが対応できていないのでコメントアウト
-	// userId, err := verifyToken(c)
-	// if err != nil {
-	//     return
-	// }
+	userId, err := verifyToken(c)
+	if err != nil {
+		return
+	}
 
-	userId := 1
 	var subscription model.Subscription
 	if error := c.Bind(&subscription); error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -112,11 +114,10 @@ func AddSubscriptionHandler(c *gin.Context) {
 }
 
 func UpdateSubscriptionHandler(c *gin.Context) {
-	// userId, err := verifyToken(c)
-	// if err != nil {
-	// 	return
-	// }
-	userId := 1
+	userId, err := verifyToken(c)
+	if err != nil {
+		return
+	}
 
 	id := c.Param("id")
 	var newSubscription model.Subscription
@@ -127,14 +128,8 @@ func UpdateSubscriptionHandler(c *gin.Context) {
 		return
 	}
 
-	if newSubscription.UserId != uint(userId) {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "You are not authorized to update this subscription",
-		})
-		return
-	}
-
 	var subscription model.Subscription
+
 	if err := db.First(&subscription, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "Subscription not found",
@@ -142,7 +137,17 @@ func UpdateSubscriptionHandler(c *gin.Context) {
 		return
 	}
 
-	if err := db.Save(&subscription).Error; err != nil {
+	if subscription.UserId != uint(userId) {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "You are not authorized to update this subscription",
+		})
+		return
+	}
+
+	newSubscription.UserId = subscription.UserId
+
+	// subscriptionのレコードをnewSubscriptionの内容で更新
+	if err := db.Model(&subscription).Updates(newSubscription).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to update subscription",
 		})
@@ -155,11 +160,10 @@ func UpdateSubscriptionHandler(c *gin.Context) {
 }
 
 func DeleteSubscriptionHandler(c *gin.Context) {
-	// userId, err := verifyToken(c)
-	// if err != nil {
-	// 	return
-	// }
-	userId := 1
+	userId, err := verifyToken(c)
+	if err != nil {
+		return
+	}
 
 	id := c.Param("id")
 	var subscription model.Subscription
