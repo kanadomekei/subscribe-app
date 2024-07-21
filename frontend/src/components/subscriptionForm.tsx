@@ -83,7 +83,6 @@ const SubscriptionForm = ({
   value?: SubscriptionEx;
   handleSubmit: (values: z.infer<typeof formSchema>) => void;
 }) => {
-  console.log(value);
   const [schema, setSchema] = useState(() => getSchema("month"));
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(schema),

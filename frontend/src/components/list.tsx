@@ -19,6 +19,7 @@ async function getAllSubscriptions(): Promise<SubscriptionEx[]> {
       "refreshToken": `${localStorage.getItem("refreshToken")}`,
     },
   });
+
   if (!res.ok) {
     throw new Error("Failed to fetch data");
   }
