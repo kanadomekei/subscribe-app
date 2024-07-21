@@ -44,7 +44,12 @@ const ListCard = ({
   const handleDelete = async (id: number) => {
     if (confirm("本当に削除しますか？")) {
       const url = `${API_URL}/app/delete/${id}`;
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       if (!res.ok) {
         throw new Error("Failed to fetch data");
       }
