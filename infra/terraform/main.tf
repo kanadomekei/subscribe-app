@@ -38,5 +38,5 @@ module "instances" {
 module "eips" {
   source = "./modules/eips"
   dev_instance_id = module.instances.dev_instance_id
-  prod_instance_id = module.instances.prod_instance_id
+  # prod_instance_id = module.instances.prod_instance_id
 }

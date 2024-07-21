@@ -59,7 +59,7 @@ function Login() {
       });
       const data = await response.json();
       if (data.success) {
-        login(data.user);
+        login({ email: data.user, id: data.userID });
         console.log("ログイン成功", "user", data.user, data.userID);
         console.log("ログイン成功", "userID", data.userID);
 
@@ -120,7 +120,7 @@ function Login() {
                 {loading ? (
                   <div className="flex">
                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                    "Please wait"
+                    Please wait
                   </div>
                 ) : (
                   "Login"

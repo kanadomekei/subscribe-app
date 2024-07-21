@@ -16,6 +16,23 @@ import {
 import { Subscriptions } from "@/sample/subscription";
 
 const data = Subscriptions.map((subscription) => {
+  // if (subscription.period === -1) {
+  //   const dec = new Date("December 31");
+  //   const period = Math.floor(
+  //     (dec.getTime() - subscription.startMonth.getTime()) /
+  //       1000 /
+  //       60 /
+  //       60 /
+  //       24 /
+  //       30
+  //   );
+  //   const price = subscription.price * period;
+  //   return {
+  //     app: subscription.appName,
+  //     price: price,
+  //     fill: `var(--color-${subscription.id})`,
+  //   };
+  // }
   return {
     app: subscription.appName,
     price: subscription.price,
