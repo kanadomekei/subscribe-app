@@ -11,9 +11,17 @@ import (
 // ユーザIDと有効期限からトークンを生成する
 // expは何時間の単位で指定
 func GenerateToken(id uint, exp uint) string {
+	token_type := ""
+	if exp == 1 {
+		token_type = "access"
+	} else {
+		token_type = "refresh"
+	}
+
 	claims := jwt.MapClaims{
-		"user_id": id,
-		"exp":     time.Now().Add(time.Hour * time.Duration(exp)).Unix(),
+		"user_id":    id,
+		"token_type": token_type,
+		"exp":        time.Now().Add(time.Hour * time.Duration(exp)).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -38,7 +46,6 @@ func VerifyToken(tokenString string) (uint, error) {
 		if !ok {
 			return 0, fmt.Errorf("invalid user_id type")
 		}
-		// fmt.Printf("user_id: %v\n", userId)
 
 		// 有効期限の取得
 		exp, ok := claims["exp"].(float64)
@@ -47,7 +54,12 @@ func VerifyToken(tokenString string) (uint, error) {
 		} else if int64(exp) < time.Now().Unix() {
 			return 0, fmt.Errorf("token is expired")
 		}
-		// fmt.Printf("exp: %v\n", int64(exp))
+
+		// access tokenかどうかの確認
+		tokenType, ok := claims["token_type"].(string)
+		if !ok || tokenType != "access" {
+			return 0, fmt.Errorf("token is invalid")
+		}
 
 		return uint(userId), nil
 	}

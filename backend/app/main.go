@@ -70,6 +70,7 @@ func main() {
 	{
 		auth.POST("/register", controller.RegisterHandler)
 		auth.POST("/login", controller.LoginHandler)
+		auth.POST("/refresh", controller.RefreshTokenHandler)
 	}
 
 	// /app/ のルーティング

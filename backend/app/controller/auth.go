@@ -109,3 +109,28 @@ func LoginHandler(c *gin.Context) {
 		"success":       true,
 	})
 }
+
+func RefreshTokenHandler(c *gin.Context) {
+	refresh_token := c.Request.Header.Get("Authorization")
+	if refresh_token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Refresh token is required",
+		})
+		return
+	}
+
+	user_id, err := jwt.VerifyToken(refresh_token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid refresh token",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"access_token":  jwt.GenerateToken(user_id, 1),
+		"refresh_token": jwt.GenerateToken(user_id, 72),
+		"message":       "Token refreshed successfully",
+		"success":       true,
+	})
+}
