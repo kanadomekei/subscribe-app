@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import SubscriptionForm from "@/components/subscriptionForm";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/components/authProvider";
 import { useNavigate } from "react-router-dom";
 import { FormValue } from "@/types";
@@ -9,9 +9,15 @@ import { FormValue } from "@/types";
 const API_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:8080";
 
 const AddForm = () => {
-  const { user } = useContext(AuthContext);
+  const { user, isAuthenticated } = useContext(AuthContext);
   const [period, setPeriod] = useState<number>();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated]);
 
   const handleSubmit = async (values: FormValue) => {
     if (values !== undefined) {

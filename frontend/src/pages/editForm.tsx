@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SubscriptionForm from "@/components/subscriptionForm";
 import { FormValue, SubscriptionEx } from "@/types";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/components/authProvider";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -17,13 +17,19 @@ async function getSubscription(id: string): Promise<SubscriptionEx> {
 }
 
 const EditForm = () => {
-  const { user } = useContext(AuthContext);
+  const { user, isAuthenticated } = useContext(AuthContext);
   const [period, setPeriod] = useState<number>();
   const navigate = useNavigate();
   const { id } = useParams();
   if (!id) {
     return navigate("/");
   }
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated]);
 
   const {
     data: subscription,
