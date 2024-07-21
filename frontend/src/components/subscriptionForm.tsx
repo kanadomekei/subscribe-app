@@ -25,7 +25,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { format } from "date-fns";
-import { Subscription } from "@/types";
+import { SubscriptionEx } from "@/types";
 
 const formSchema = z.object({
   appName: z.string().min(1, "サブスク名を入力してください").max(20),
@@ -41,7 +41,13 @@ const formSchema = z.object({
   payment: z.string(),
   startMonth: z.date(),
   current: z.boolean(),
-  endMonth: z.date().optional(),
+  period: z
+    .string()
+    .refine((value) => !isNaN(Number(value)), {
+      message: "数値を入れてください",
+    })
+    .transform((value) => (value === "" ? "" : Number(value)))
+    .optional(),
 });
 
 const monthPaymentSchema = z
@@ -70,35 +76,26 @@ const getSchema = (interval: string) => {
   });
 };
 
-const SubscriptionForm = ({ value }: { value?: Subscription }) => {
+const SubscriptionForm = ({
+  value,
+  handleSubmit,
+}: {
+  value?: SubscriptionEx;
+  handleSubmit: (values: z.infer<typeof formSchema>) => void;
+}) => {
   const [schema, setSchema] = useState(() => getSchema("month"));
-
-  const [endMonth, setEndMonth] = useState(
-    new Date(value ? value.startMonth : "")
-  );
-
-  useEffect(() => {
-    if (value) {
-      if (value.period !== -1) {
-        const updatedDate = new Date(endMonth); // 新しいDateオブジェクトを作成
-        updatedDate.setMonth(updatedDate.getMonth() + value.period);
-        setEndMonth(updatedDate); // 新しいDateオブジェクトをsetEndMonthに渡す
-      }
-    }
-  }, [value]);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(schema),
     defaultValues: value
       ? {
-          appName: value?.appName,
-          link: value?.link,
-          price: value?.price,
-          interval: value?.interval,
-          payment: String(value?.payment),
-          startMonth: value?.startMonth,
-          current: value?.period !== -1,
-          endMonth: endMonth,
+          appName: value?.AppName,
+          link: value?.Url,
+          price: String(value?.Price) as unknown as number,
+          interval: value?.Interval,
+          payment: String(value?.Payment),
+          startMonth: new Date(value?.StartDate),
+          current: value?.Period === 0,
+          period: value?.Period === 0 ? undefined : value.Period,
         }
       : {
           appName: "",
@@ -108,12 +105,13 @@ const SubscriptionForm = ({ value }: { value?: Subscription }) => {
           payment: "",
           startMonth: undefined,
           current: true,
-          endMonth: undefined,
+          period: "",
         },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
+    handleSubmit(values);
   }
 
   const toggleValue = form.watch("current");
@@ -158,11 +156,15 @@ const SubscriptionForm = ({ value }: { value?: Subscription }) => {
             control={form.control}
             name="price"
             render={({ field }) => (
-              <FormItem className="max-w-[10rem]">
+              <FormItem>
                 <FormLabel>金額</FormLabel>
                 <FormControl>
                   <div className="flex items-baseline gap-2">
-                    <Input className="text-end" placeholder="100" {...field} />
+                    <Input
+                      className="text-end max-w-[10rem]"
+                      placeholder="100"
+                      {...field}
+                    />
                     <Label>円</Label>
                   </div>
                 </FormControl>
@@ -200,12 +202,12 @@ const SubscriptionForm = ({ value }: { value?: Subscription }) => {
               control={form.control}
               name="payment"
               render={({ field }) => (
-                <FormItem className="max-w-[10rem]">
+                <FormItem>
                   <FormLabel>支払日</FormLabel>
                   <FormControl>
                     <div className="flex items-baseline gap-2">
                       <Input
-                        className="text-end"
+                        className="text-end max-w-[10rem]"
                         {...field}
                         placeholder={"1-31"}
                       />
@@ -222,12 +224,12 @@ const SubscriptionForm = ({ value }: { value?: Subscription }) => {
               control={form.control}
               name="payment"
               render={({ field }) => (
-                <FormItem className="max-w-[10rem]">
+                <FormItem>
                   <FormLabel>支払月</FormLabel>
                   <FormControl>
                     <div className="flex items-baseline gap-2">
                       <Input
-                        className="text-end"
+                        className="text-end max-w-[10rem]"
                         {...field}
                         placeholder={"1-12"}
                       />
@@ -296,44 +298,26 @@ const SubscriptionForm = ({ value }: { value?: Subscription }) => {
           {!toggleValue && (
             <FormField
               control={form.control}
-              name="endMonth"
+              name="period"
               render={({ field }) => (
-                <FormItem className={"max-w-[10rem]"}>
-                  <FormLabel>終了</FormLabel>
+                <FormItem>
+                  <FormLabel>期間(何ヶ月)</FormLabel>
                   <FormControl>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-[280px] justify-start text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <div className="flex items-baseline gap-2">
+                      <Input
+                        className="text-end max-w-[10rem]"
+                        {...field}
+                        placeholder={""}
+                      />
+                      <Label className="w-full">ヶ月</Label>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           )}
-          <Button type="submit">追加</Button>
+          <Button type="submit">{value ? "更新" : "追加"}</Button>
         </form>
       </Form>
     </div>

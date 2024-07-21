@@ -67,7 +67,7 @@ function SignUp() {
       console.log("Success:", data);
       login(data.user);
       setLoading(false);
-      navigate("/");
+      navigate("/login");
     } catch (error) {
       console.error("Error:", error);
       setError("Registration failed");
@@ -111,9 +111,9 @@ function SignUp() {
               />
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (
-                  <div className="flex">
+                  <div className="flex items-center">
                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                    "Please wait"
+                    Please wait
                   </div>
                 ) : (
                   "Sign Up"
