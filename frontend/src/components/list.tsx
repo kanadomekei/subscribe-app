@@ -9,9 +9,17 @@ import { AuthContext } from "./authProvider";
 
 const API_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:8080";
 
-async function getAllSubscriptions(userId: number): Promise<SubscriptionEx[]> {
-  const url = `${API_URL}/app/all?user_id=${userId}`;
-  const res = await fetch(url);
+async function getAllSubscriptions(): Promise<SubscriptionEx[]> {
+  const url = `${API_URL}/app/all`;
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `${localStorage.getItem("accessToken")}`,
+      "refreshToken": `${localStorage.getItem("refreshToken")}`,
+    },
+  });
+
   if (!res.ok) {
     throw new Error("Failed to fetch data");
   }
@@ -19,9 +27,8 @@ async function getAllSubscriptions(userId: number): Promise<SubscriptionEx[]> {
 }
 
 const List = () => {
-  const { user } = useContext(AuthContext);
-  console.log(user);
-  if (!user) {
+  const { isAuthenticated } = useContext(AuthContext);
+  if (!isAuthenticated) {
     return;
   }
   const {
@@ -31,7 +38,7 @@ const List = () => {
     refetch,
   } = useQuery({
     queryKey: ["subscriptions"],
-    queryFn: () => getAllSubscriptions(user.id),
+    queryFn: () => getAllSubscriptions(),
   });
 
   if (isPending) {
@@ -39,6 +46,7 @@ const List = () => {
   }
 
   if (error) {
+    console.log(error);
     return <div className="error">something went wrong</div>;
   }
 

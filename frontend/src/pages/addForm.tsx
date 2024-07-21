@@ -9,7 +9,7 @@ import { FormValue } from "@/types";
 const API_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:8080";
 
 const AddForm = () => {
-  const { user, isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated } = useContext(AuthContext);
   const [period, setPeriod] = useState<number>();
   const navigate = useNavigate();
 
@@ -33,9 +33,10 @@ const AddForm = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `${localStorage.getItem("accessToken")}`,
+          "refreshToken": `${localStorage.getItem("refreshToken")}`,
         },
         body: JSON.stringify({
-          UserId: Number(user.id),
           AppName: values.appName,
           Price: values.price,
           Interval: values.interval,

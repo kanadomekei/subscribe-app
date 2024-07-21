@@ -259,6 +259,7 @@ const SubscriptionForm = ({
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {field.value ? (
+                          console.log(field.value),
                           format(field.value, "PPP")
                         ) : (
                           <span>Pick a date</span>
