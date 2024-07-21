@@ -4,7 +4,7 @@ services:
         container_name: backend
         build:
             context: .
-            dockerfile: infra/docker/local/Dockerfile.backend
+            dockerfile: infra/docker/prod/Dockerfile.backend
         image: backend_image
         tty: true
         ports:
@@ -25,7 +25,7 @@ services:
     db:
         container_name: db
         build:
-            context: ./infra/docker/local
+            context: ./infra/docker/prod
             dockerfile: Dockerfile.db
         image: db_image
         tty: true
@@ -48,7 +48,7 @@ services:
         container_name: frontend
         build:
             context: .
-            dockerfile: ./infra/docker/local/Dockerfile.frontend
+            dockerfile: ./infra/docker/prod/Dockerfile.frontend
         image: frontend_image
         volumes:
         - ./frontend:/app
@@ -57,25 +57,8 @@ services:
         networks:
         - frontend_network
         ports:
-        - '5173:5173'
-        command: >
-            sh -c "npm install && npm run dev -- --host"
-
-    nginx:
-        container_name: nginx
-        build:
-            context: ./
-            dockerfile: infra/docker/local/Dockerfile.nginx
-        image: nginx_image
-        ports:
-            - '80:80'
-        networks:
-            - frontend_network
-        depends_on:
-            - frontend
-        volumes:
-            - ./infra/nginx/logs:/var/log/nginx
-
+        - '80:80'
+        
 volumes:
     mysql_test_volume:
     node_modules:

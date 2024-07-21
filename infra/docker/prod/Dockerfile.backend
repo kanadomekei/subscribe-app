@@ -1,0 +1,33 @@
+# ビルドステージ
+FROM golang:1.20-alpine3.16 AS builder
+
+# 作業ディレクトリ作成
+WORKDIR /go/src/app
+
+# go.modとgo.sumをコピー
+COPY ./backend/app/go.mod ./backend/app/go.sum ./
+
+# 依存関係をインストール
+RUN go mod download
+
+# アプリケーションのソースコードをコピー
+COPY ./backend/app .
+
+# アプリケーションをビルド
+RUN CGO_ENABLED=0 GOOS=linux go build -o main .
+
+# 実行ステージ
+FROM alpine:3.16
+
+WORKDIR /app
+
+# ビルドステージからバイナリをコピー
+COPY --from=builder /go/src/app/main .
+
+# 実行権限を付与
+RUN chmod +x ./main
+
+EXPOSE 8080
+
+# アプリケーションを実行
+CMD ["./main"]
