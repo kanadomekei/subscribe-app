@@ -8,17 +8,17 @@ on:
 
 jobs:
   lint:
-    uses: ./.github/workflows/lint.yml
+    uses: ./.github/workflows/jobs/lint.yml
 
   test:
     needs: lint
-    uses: ./.github/workflows/test.yml
+    uses: ./.github/workflows/jobs/test.yml
 
   build:
     needs: test
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/jobs/build.yml
 
   deploy:
     needs: build
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/jobs/deploy.yml
     secrets: inherit
