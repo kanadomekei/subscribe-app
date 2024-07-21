@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'S3バケットを作成するためのCloudFormationテンプレート'
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: 'subscribe-app-2024-7-20-11-11'
+
+Resources:
+  MyS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketName
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+Outputs:
+  BucketName:
+    Description: '作成されたS3バケットの名前'
+    Value: !Ref MyS3Bucket
+  BucketARN:
+    Description: '作成されたS3バケットのARN'
+    Value: !GetAtt MyS3Bucket.Arn
