@@ -3,55 +3,14 @@ import { Button } from "./ui/button";
 import ListCard from "./listCard";
 import { Link } from "react-router-dom";
 import { SubscriptionEx } from "@/types";
-import { useQuery } from "@tanstack/react-query";
-import { useContext } from "react";
-import { AuthContext } from "./authProvider";
 
-const API_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:8080";
-
-async function getAllSubscriptions(): Promise<SubscriptionEx[]> {
-  const url = `${API_URL}/app/all`;
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `${localStorage.getItem("accessToken")}`,
-      "refreshToken": `${localStorage.getItem("refreshToken")}`,
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch data");
-  }
-  return res.json();
-}
-
-const List = () => {
-  const { isAuthenticated } = useContext(AuthContext);
-  if (!isAuthenticated) {
-    return;
-  }
-  const {
-    data: subscriptions,
-    isPending,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["subscriptions"],
-    queryFn: () => getAllSubscriptions(),
-  });
-
-  if (isPending) {
-    return <div className="loading">Loading...</div>;
-  }
-
-  if (error) {
-    console.log(error);
-    return <div className="error">something went wrong</div>;
-  }
-
-  console.log(subscriptions);
-
+const List = ({
+  subscriptions,
+  deleteFn,
+}: {
+  subscriptions: SubscriptionEx[];
+  deleteFn: () => void;
+}) => {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -73,7 +32,7 @@ const List = () => {
           }
         >
           {subscriptions.map((subscription: SubscriptionEx, index) => (
-            <ListCard key={index} props={subscription} deleteFn={refetch} />
+            <ListCard key={index} props={subscription} deleteFn={deleteFn} />
           ))}
         </div>
       )}

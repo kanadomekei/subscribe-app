@@ -1,4 +1,4 @@
-import { createContext, ReactNode, SetStateAction, useState } from "react";
+import { createContext, ReactNode, useState } from "react";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -43,7 +43,9 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, accessToken, refreshToken, login, logout }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, accessToken, refreshToken, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
