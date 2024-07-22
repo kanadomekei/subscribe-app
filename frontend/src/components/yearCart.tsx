@@ -1,5 +1,6 @@
 import { Label, Pie, PieChart } from "recharts";
 import {
+  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
@@ -36,6 +37,7 @@ const processChartData = (
   if (othersValue > 0) {
     top5.push({ app: "Other", price: othersValue, fill: `var(--color-6)` });
   }
+  console.log(top5);
   return top5;
 };
 
@@ -91,9 +93,11 @@ function calculateYearlySubscriptionAmount(subscription: SubscriptionEx) {
   const paymentMonth = subscription.Payment; // 支払いが発生する月（1-12）
 
   // 今年の1月1日から12月31日までの期間を設定
+  const startMonth = new Date(currentYear, 0, 1);
   const endMonth = new Date(currentYear, 11, 31);
 
   // サブスクリプションが今年も続いているかどうかを確認
+  const effectiveStart = start > startMonth ? start : startMonth;
   const effectiveEnd = subscription.Period
     ? new Date(
         start.setFullYear(

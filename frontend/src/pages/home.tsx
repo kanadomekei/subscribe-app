@@ -6,17 +6,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useContext } from "react";
 const API_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:8080";
 
-async function getAllSubscriptions(): Promise<SubscriptionEx[]> {
-  const url = `${API_URL}/app/all`;
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `${localStorage.getItem("accessToken")}`,
-      refreshToken: `${localStorage.getItem("refreshToken")}`,
-    },
-  });
-
+async function getAllSubscriptions(userId: number): Promise<SubscriptionEx[]> {
+  const url = `${API_URL}/app/all?user_id=${userId}`;
+  const res = await fetch(url);
   if (!res.ok) {
     throw new Error("Failed to fetch data");
   }
@@ -24,8 +16,15 @@ async function getAllSubscriptions(): Promise<SubscriptionEx[]> {
 }
 
 const Home = () => {
-  const { isAuthenticated } = useContext(AuthContext);
+  const { user, isAuthenticated } = useContext(AuthContext);
   if (!isAuthenticated) {
+    return (
+      <div className="container">
+        <p>You are not logged in.</p>
+      </div>
+    );
+  }
+  if (!user) {
     return;
   }
   const {
@@ -35,7 +34,7 @@ const Home = () => {
     refetch,
   } = useQuery({
     queryKey: ["subscriptions"],
-    queryFn: () => getAllSubscriptions(),
+    queryFn: () => getAllSubscriptions(user.id),
   });
 
   if (isPending) {
@@ -43,7 +42,6 @@ const Home = () => {
   }
 
   if (error) {
-    console.log(error);
     return <div className="error">something went wrong</div>;
   }
 

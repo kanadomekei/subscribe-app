@@ -66,8 +66,6 @@ function SignUp() {
       const data = await response.json();
       console.log("Success:", data);
       login(data.user);
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
       setLoading(false);
       navigate("/login");
     } catch (error) {

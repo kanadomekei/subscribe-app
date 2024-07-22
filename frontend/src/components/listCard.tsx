@@ -48,8 +48,6 @@ const ListCard = ({
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `${localStorage.getItem("accessToken")}`,
-          "refreshToken": `${localStorage.getItem("refreshToken")}`,
         },
       });
       if (!res.ok) {

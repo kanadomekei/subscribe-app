@@ -9,14 +9,7 @@ const API_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:8080";
 
 async function getSubscription(id: string): Promise<SubscriptionEx> {
   const url = `${API_URL}/app/${id}`;
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `${localStorage.getItem("accessToken")}`,
-      "refreshToken": `${localStorage.getItem("refreshToken")}`,
-    },
-  });
+  const res = await fetch(url);
   if (!res.ok) {
     throw new Error("Failed to fetch data");
   }
@@ -24,7 +17,7 @@ async function getSubscription(id: string): Promise<SubscriptionEx> {
 }
 
 const EditForm = () => {
-  const { isAuthenticated } = useContext(AuthContext);
+  const { user, isAuthenticated } = useContext(AuthContext);
   const [period, setPeriod] = useState<number>();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -71,10 +64,9 @@ const EditForm = () => {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `${localStorage.getItem("accessToken")}`,
-          "refreshToken": `${localStorage.getItem("refreshToken")}`,
         },
         body: JSON.stringify({
+          UserId: Number(user.id),
           AppName: values.appName,
           Price: values.price,
           Interval: values.interval,

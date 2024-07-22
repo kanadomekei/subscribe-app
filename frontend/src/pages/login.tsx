@@ -19,7 +19,6 @@ import { Input } from "@/components/ui/input";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ReloadIcon } from "@radix-ui/react-icons";
-import { access } from "fs";
 import { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
@@ -60,14 +59,9 @@ function Login() {
       });
       const data = await response.json();
       if (data.success) {
-        login({ email: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken });
+        login({ email: data.user, id: data.userID });
         console.log("ログイン成功", "user", data.user, data.userID);
         console.log("ログイン成功", "userID", data.userID);
-
-        // トークンを保存する
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
-        
         setLoading(false);
         navigate(`/`);
       } else {
